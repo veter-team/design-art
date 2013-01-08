@@ -202,7 +202,7 @@ def camcap():
 	
 	viewport = texture.ImageViewport()
 #	viewport = texture.ImageRender(scene,cams[1])
-	viewport.depth = True
+###	viewport.depth = True
 	buff = texture.imageToArray(viewport,'RGB1')
 	writearray(buff,"imagetest")
 	
