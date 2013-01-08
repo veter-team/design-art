@@ -316,17 +316,19 @@ def Update_Motors():
 	sl = limit_sr(gval('motor_left'))
 	sr = limit_sr(gval('motor_right'))
 	
-	v =  recalc(sl*3,sr*3)
-
+	slm = sl / 10
+	srm = sr / 10
+	
 	msg = 'motors:'+str(sl)+":"+str(sr)
 	logic.sendMessage('motors',msg)
-	
 	sl *= 0.5
 	sr *= 0.5			
 	sval('motor_left',sl)
 	sval('motor_right',sr)
-	
-	Update_Robot(v[0],v[1],v[2],v[3],v[4],v[5])
+
+	for i in range(0,10):
+		v =  recalc(slm*3,srm*3)
+		Update_Robot(v[0],v[1],v[2],v[3],v[4],v[5])
 		
 	
 def Init_DateTime():
