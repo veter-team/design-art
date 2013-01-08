@@ -272,23 +272,25 @@ def initialize():
 		TRS.append([i*s,i*s])
 
 def Bx_Control():
-	msg = bge.logic.getCurrentController().sensors[0].bodies[0]
-	lv = 0
-	rv = 0
-	if msg == 'up_arrow':
-		lv = 0.5
-		rv = 0.5
-	if msg == 'left_arrow':
-		lv = 0.5
-		rv = -0.5
-	if msg == 'down_arrow':
-		lv = -0.5
-		rv = -0.5
-	if msg == 'right_arrow':
-		lv = -0.5
-		rv = 0.5
-	svalsum('motor_left',lv)
-	svalsum('motor_right',rv)	
+	sens = bge.logic.getCurrentController().sensors[0]
+	if len(sens.bodies)>0:
+		msg = sens.bodies[0]
+		lv = 0
+		rv = 0
+		if msg == 'up_arrow':
+			lv = 0.5
+			rv = 0.5
+		if msg == 'left_arrow':
+			lv = 0.5
+			rv = -0.5
+		if msg == 'down_arrow':
+			lv = -0.5
+			rv = -0.5
+		if msg == 'right_arrow':
+			lv = -0.5
+			rv = 0.5
+		svalsum('motor_left',lv)
+		svalsum('motor_right',rv)	
 	
 
 def Bx_RadarDetect():
