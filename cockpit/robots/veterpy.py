@@ -47,6 +47,26 @@ def Update_Robot(Sl,Sr,Rwl,Rwr,S,Zr):
 			base.localPosition = (0,p[0],p[1])
 			eul = mathutils.Euler((p[2], 0.0, 0.0), 'XYZ')
 			base.localOrientation = eul
+
+def Update_Robot_Head():
+	obj = getObject('head')
+
+	sal = obj.localOrientation.to_euler('XYZ').z/Pi()*180
+	val = gval('head_rotate')
+	
+	print(sal,val,sal*val)
+
+	if abs(sal)>80 and sal*val>=0:
+		val = 0
+		print('-')
+	else:
+		print('+')
+		obj.applyRotation([0,0,val],True)
+	val /= 2
+	if abs(val)<0.001:
+		val = 0
+			
+	sval('head_rotate',val)
 	
 def recalc(Sl,Sr):
 	global WR
@@ -220,8 +240,6 @@ def setup():
 	#obj = cont.owner
 	obj = getObject('Plane')
 	
-	print("setup:",obj)
-	
 	scene = logic.getCurrentScene()
 	camera = scene.objects['Cam2']
 	
@@ -236,8 +254,6 @@ def refresh(cont):
 	global Ptexture
 	
 	obj = cont.owner
-	print("refresh:",obj)
-	
 	if (not Ptexture in obj and not setup(cont)):
 		return
 	obj[Ptexture].refresh(True)
@@ -275,22 +291,28 @@ def Bx_Control():
 	sens = bge.logic.getCurrentController().sensors[0]
 	if len(sens.bodies)>0:
 		msg = sens.bodies[0]
-		lv = 0
-		rv = 0
 		if msg == 'up_arrow':
-			lv = 0.5
-			rv = 0.5
+			svalsum('motor_left', 0.5)
+			svalsum('motor_right',0.5)
+			return	
 		if msg == 'left_arrow':
-			lv = 0.5
-			rv = -0.5
+			svalsum('motor_left', 0.5)
+			svalsum('motor_right',-0.5)
+			return	
 		if msg == 'down_arrow':
-			lv = -0.5
-			rv = -0.5
+			svalsum('motor_left', -0.5)
+			svalsum('motor_right',-0.5)
+			return	
 		if msg == 'right_arrow':
-			lv = -0.5
-			rv = 0.5
-		svalsum('motor_left',lv)
-		svalsum('motor_right',rv)	
+			svalsum('motor_left', -0.5)
+			svalsum('motor_right',0.5)
+			return
+		if msg == 'z_key':
+			svalsum('head_rotate',0.01)
+			return
+		if msg == 'x_key':
+			svalsum('head_rotate',-0.01)
+			return
 	
 
 def Bx_RadarDetect():
@@ -303,8 +325,10 @@ def Bx_RadarDetect():
 	sval(key,dis)
 
 def Init_Motors():
-	sl = sval('motor_left',0)
-	sr = sval('motor_right',0)
+	sval('motor_left',0)
+	sval('motor_right',0)
+	sval('head_rotate',0)
+	
 
 def limit_sr(a):
 	m = 1
@@ -327,11 +351,14 @@ def Update_Motors():
 	sr *= 0.5			
 	sval('motor_left',sl)
 	sval('motor_right',sr)
-
 	for i in range(0,10):
 		v =  recalc(slm*3,srm*3)
 		Update_Robot(v[0],v[1],v[2],v[3],v[4],v[5])
-		
+
+	obj = getObject('head')
+	val = obj.localOrientation.to_euler('XYZ').z/Pi()*180
+	msg = 'head_rotate:'+str(-val)
+	logic.sendMessage('head_rotate',msg)
 	
 def Init_DateTime():
 	pass
@@ -345,10 +372,11 @@ def Init_Compas():
 	pass
 	
 def Update_Compas():
-	robot = getObject('robot')
-	value = abs(robot.localOrientation.to_euler('XYZ').z/Pi()*180+180)
-	msg = 'compas:'+str(value)
+	obj = getObject('robot')
+	val = abs(obj.localOrientation.to_euler('XYZ').z/Pi()*180+180)
+	msg = ':'+str(val)
 	logic.sendMessage('compas',msg)
+
 
 def Init_Radar():
 	keys = ['radar.000','radar.001','radar.002','radar.003']
@@ -381,6 +409,8 @@ def Update():
 	Update_Compas()
 	Update_Radar()
 	Update_Motors()
+	Update_Robot_Head()	
+	
     
 def main():
 	initialize()
